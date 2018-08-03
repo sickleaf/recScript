@@ -14,8 +14,11 @@ functionFileName=function.sh
 . ./${functionFileName}
 
 playerURL=`configGrep playerURL`
+loginURL=`configGrep loginURL`
 
 userName=`configGrep userName`
+
+fileList=`configGrep fileList`
 
 ################################################
 # [1] tmp
@@ -36,12 +39,9 @@ keyfile=${tmpPath}/authkey.png
 auth1_fms=${tmpPath}/auth1_fms
 auth2_fms=${tmpPath}/auth2_fms
 cookiefile=${tmpPath}/pre_cookie_${pid}_${date}.txt
-#checkfile=${tmpPath}/pre_check.txt
 loginfile=${tmpPath}/pre_login.txt
 logoutfile=${tmpPath}/pre_logout.txt
 
-fileList=fileList.txt
-# ADD fileList.txt into config.sh
 
 ################################################
 # [2] mnt
@@ -302,7 +302,7 @@ if [ $? = 0 ]; then
 fi
 
 
-# cut mp3 file detecting
+# detect silence / cut mp3file using mp3splt
 mp3splt -q -N -s -p min=${spltmin},th=${spltth} -d "${tmpCutDirPath}" "${tmpFullMP3Path}"
 
 # export file list in tmpCutDirPath
