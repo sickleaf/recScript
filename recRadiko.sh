@@ -65,11 +65,13 @@ syncPath=`configGrep syncPath`
 
 syncFullName=`configGrep syncFullName`
 syncOptalkName=`configGrep syncOptalkName`
+syncBaseName=`configGrep syncBaseName`
 syncCMName=`configGrep syncCMName`
 syncCornerName=`configGrep syncCornerName`
 
 syncFullPath=${syncPath}/${syncFullName}
 syncOptalkPath=${syncPath}/${syncOptalkName}
+syncBasePath=${syncPath}/${syncBaseName}
 syncCMPath=${syncPath}/${syncCMName}
 syncCornerPath=${syncPath}/${syncCornerName}
 
