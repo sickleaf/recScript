@@ -40,6 +40,9 @@ cookiefile=${tmpPath}/pre_cookie_${pid}_${date}.txt
 loginfile=${tmpPath}/pre_login.txt
 logoutfile=${tmpPath}/pre_logout.txt
 
+fileList=fileList.txt
+# ADD fileList.txt into config.sh
+
 ################################################
 # [2] mnt
 ################################################
@@ -103,7 +106,9 @@ stationXML=${tmpPath}/${stationID}${pid}.xml
 savefile=${tmpPath}/${fileBaseName}
 
 tmpFullMP3Path=${tmpFullPath}/${fileBaseName}.mp3
+mntFullMP3Path=${mntFullPath}/${fileBaseName}.mp3
 tmpCutDirPath=${tmpCutPath}/${fileBaseName}
+mntCutDirPath=${mntCutPath}/${fileBaseName}
 
 ################################################
 
@@ -269,10 +274,13 @@ wget -q \
 	echo "[url_parts1] ${url_parts[1]}"
 	echo "[url_parts2] ${url_parts[2]}"
 
-#
-# rtmpdump
-#
-#rtmpdump -q $
+
+
+################################################
+# [1] local
+################################################
+
+# record files
 /usr/bin/rtmpdump \
          -r ${url_parts[0]} \
          --app ${url_parts[1]} \
@@ -285,30 +293,53 @@ wget -q \
          --flv ${savefile}
 Logout
 
+# convert localfile to mp3
 ffmpeg -loglevel warning -y -i "${savefile}" -acodec libmp3lame -ab 64k "${tmpFullMP3Path}"
 
+# delete localfile
 if [ $? = 0 ]; then
 	rm -f ${savefile};
 fi
 
 
-mp3splt -s -p min=${spltmin},th=${spltth} -d "${tmpCutDirPath}" "${tmpFullMP3Path}"
+# cut mp3 file detecting
+mp3splt -q -N -s -p min=${spltmin},th=${spltth} -d "${tmpCutDirPath}" "${tmpFullMP3Path}"
 
-cutNum=(ls -l ${tmpCutDirPath} | wc -l)
+# export file list in tmpCutDirPath
+cutNum=`ls -l ${tmpCutDirPath}/*.mp3  | wc -l`
+ls -ld ${tmpCutDirPath}/*.mp3 | awk '{print $5,$NF}' > ${tmpCutDirPath}/${fileList}
 
-ls -ld ${tmpCutDirPath}/*.mp3 | awk '{print $5,$NF}' > fileList.txt
-#sudo /usr/bin/mp3splt -s -p min=$spltmin,th=$spltth -d "${basedir}/${date}_${PREFIX}" "${outdir}/${date}_${PREFIX}.mp3"
-#
-#if [ $syncflag -eq 0 ]; then
-#	echo "[start]copy file without split"
-#	sudo cp "${outdir}/${date}_${PREFIX}.mp3" ${gdrivebasedir}
-#	echo "[end]copy file without split"
-#fi
-#
-#if [ $syncflag -ne 0 ]; then
-#	echo "[start]copy base/cm folder after split"
-#	sudo cp -R  ${basedir}/${date}_${PREFIX} ${gdrivebasedir}
-#	sudo cp -R  ${cmdir}/${date}_${PREFIX} ${gdrivecmdir}
-#	echo "[end]copy base/cm folder after split"
-#fi
+
+################################################
+# [2] mnt
+################################################
+
+## copy full mp3
+if [ -s ${tmpFullMP3Path}  ]; then
+	sudo cp -v ${tmpFullMP3Path} ${mntFullMP3Path}
+	ls -ld ${mntFullMP3Path} | awk '{print $5,$NF}' 
+fi
+
+## copy cut files with dir
+if [ -d ${tmpCutDirPath}  ]; then
+	sudo cp -Rv ${tmpCutDirPath} ${mntCutDirPath}
+fi
+
+
+################################################
+# [3] sync
+################################################
+
+## do copy job according to syncflag
+case ${syncflag} in
+	"full" )  cpFull ${tmpFullMP3Path} ${syncFullPath} ;;
+	"optalk" )  cpOptalk ${tmpCutDirPath} ${syncOptalkPath} ;;
+esac
+
+## remove local files
+if [ -s ${tmpFullMP3Path} -a -s ${mntFullMP3Path} ]; then
+	rm ${tmpFullMP3Path}
+	rm -r ${tmpCutDirPath}
+fi
+
 

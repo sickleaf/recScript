@@ -52,4 +52,15 @@ Logout () {
     echo "=== Logout: radiko.jp ==="
 }
 
-# 
+# $1:tmpFullMP3Path
+# $2:syncFullPath
+cpFull(){
+	sudo cp -v $1 $2
+}
+
+# $1:tmpCutDirPath
+# $2:syncOptalkPath
+cpOptalk() {
+	Opfile=`cat $1/${fileList} |  head -1 | awk '{print $NF}'`
+	sudo cp -v ${Opfile} $2
+}
