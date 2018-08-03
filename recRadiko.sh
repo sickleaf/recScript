@@ -39,8 +39,6 @@ cookiefile=${tmpPath}/pre_cookie_${pid}_${date}.txt
 #checkfile=${tmpPath}/pre_check.txt
 loginfile=${tmpPath}/pre_login.txt
 logoutfile=${tmpPath}/pre_logout.txt
-stationXML=${tmpPath}/${stationID}${pid}.xml
-savefile=${tmpPath}/${date}_${PREFIX}
 
 ################################################
 # [2] mnt
@@ -83,18 +81,31 @@ outdir="."
 ################################################
 
 if [ $# -le 1 ]; then
-  echo "usage : $0 stationID duration(minuites) [outputdir] [prefix] [mail] [pass]"
+  echo "usage : $0 stationID duration(minuites) prefix syncflag spltmin spltth"
   exit 1
 fi
 if [ $# -ge 4 ]; then
   stationID=$1
   DURATION=`expr $2 \* 60`
-  outdir=$3
-  PREFIX=$4
+  PREFIX=$3
+  syncflag=$4
+fi
+
+if [ $# -ge 6 ]; then
   spltmin=$5
   spltth=$6
-  syncflag=$9
 fi
+
+################################################
+
+fileBaseName=${date}_${PREFIX}
+stationXML=${tmpPath}/${stationID}${pid}.xml
+savefile=${tmpPath}/${fileBaseName}
+
+tmpFullMP3Path=${tmpFullPath}/${fileBaseName}.mp3
+tmpCutDirPath=${tmpCutPath}/${fileBaseName}
+
+################################################
 
 ###
 # radiko premium
@@ -145,7 +156,7 @@ fi
 # get player
 #
 if [ ! -f $playerfile ]; then
-  wget -O ${playerfile} ${playerurl}
+  wget -O ${playerfile} ${playerURL}
   if [ ! -f ${playerfile} ]; then
     echo "[stop] failed get player (${playerfile})" 1>&2 ; exit 1
   fi
@@ -270,16 +281,22 @@ wget -q \
          -C S:"" -C S:"" -C S:"" -C S:$authtoken \
          --live \
          --quiet \
-         --stop ${DURATION} |\
-         mpv - --quiet
-#         --flv "$tmpPath/${date}_${PREFIX}"
+         --stop ${DURATION} \
+         --flv ${savefile}
 Logout
 
-#sudo /usr/src/FFmpeg/ffmpeg -loglevel warning -y -i "$tmpPath/${date}_${PREFIX}" -acodec libmp3lame -ab 64k "${outdir}/${date}_${PREFIX}.mp3"
-#if [ $? = 0 ]; then
-#  rm -f "$tmpPath/${date}_${PREFIX}"
-#fi
-#
+ffmpeg -loglevel warning -y -i "${savefile}" -acodec libmp3lame -ab 64k "${tmpFullMP3Path}"
+
+if [ $? = 0 ]; then
+	rm -f ${savefile};
+fi
+
+
+mp3splt -s -p min=${spltmin},th=${spltth} -d "${tmpCutDirPath}" "${tmpFullMP3Path}"
+
+cutNum=(ls -l ${tmpCutDirPath} | wc -l)
+
+ls -ld ${tmpCutDirPath}/*.mp3 | awk '{print $5,$NF}' > fileList.txt
 #sudo /usr/bin/mp3splt -s -p min=$spltmin,th=$spltth -d "${basedir}/${date}_${PREFIX}" "${outdir}/${date}_${PREFIX}.mp3"
 #
 #if [ $syncflag -eq 0 ]; then

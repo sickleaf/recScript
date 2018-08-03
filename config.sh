@@ -9,8 +9,8 @@ userName=radipi
 # scriptDir is in recRadiko.sh
 mail=wakuraba.0@gmail.com
 keyDirName=passkey
-secretKey=${scriptDir}/${keyDir}/seckey
-cipherText=${scriptDir}/${keyDir}/cipher
+secretKey=${scriptDir}/${keyDirName}/seckey
+cipherText=${scriptDir}/${keyDirName}/cipher
 pass=$(openssl rsautl -decrypt -inkey ${secretKey} -in ${cipherText})
 
 # [1] temporary save in local storage (tmp)
@@ -28,7 +28,7 @@ pass=$(openssl rsautl -decrypt -inkey ${secretKey} -in ${cipherText})
 #					/Cut				<- tmpCutPath
 #						/YYYYMMDD_programID
 
-tmpName=radio
+tmpName=script/newRecSample
 tmpResourceName=resource
 tmpFullName=Full
 tmpCutName=Cut
