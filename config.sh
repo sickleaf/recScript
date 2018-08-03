@@ -5,6 +5,8 @@ loginURL=https://radiko.jp/ap/member/login/login
 
 userName=radipi
 
+fileList=fileList.txt
+
 # mail is intentionally left blank
 # scriptDir is in recRadiko.sh
 mail=wakuraba.0@gmail.com
@@ -66,5 +68,6 @@ mntCutName=Cut
 syncPath=/mnt/transcend/sync
 syncFullName=full
 syncOptalkName=optalk
+syncBaseName=base
 syncCMName=cm
 syncCornerName=corner
