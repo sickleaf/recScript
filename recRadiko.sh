@@ -42,7 +42,6 @@ cookiefile=${tmpPath}/pre_cookie_${pid}_${date}.txt
 loginfile=${tmpPath}/pre_login.txt
 logoutfile=${tmpPath}/pre_logout.txt
 
-
 ################################################
 # [2] mnt
 ################################################
@@ -79,6 +78,7 @@ syncCornerPath=${syncPath}/${syncCornerName}
 
 spltmin=0.3
 spltth=-60
+threshold=900000
 
 syncflag=1
 outdir="."
@@ -86,7 +86,7 @@ outdir="."
 ################################################
 
 if [ $# -le 1 ]; then
-  echo "usage : $0 stationID duration(minuites) prefix syncflag spltmin spltth"
+	echo "usage : $0 stationID duration[minuites] prefix syncflag spltmin spltth (threshold cornerName)"
   exit 1
 fi
 if [ $# -ge 4 ]; then
@@ -100,6 +100,12 @@ if [ $# -ge 6 ]; then
   spltmin=$5
   spltth=$6
 fi
+
+if [ $# -ge 7 ]; then
+  threshold=$7
+  cornerName=$8
+fi
+
 
 ################################################
 
@@ -308,8 +314,10 @@ fi
 mp3splt -q -N -s -p min=${spltmin},th=${spltth} -d "${tmpCutDirPath}" "${tmpFullMP3Path}"
 
 # export file list in tmpCutDirPath
-cutNum=`ls -l ${tmpCutDirPath}/*.mp3  | wc -l`
-ls -ld ${tmpCutDirPath}/*.mp3 | awk '{print $5,$NF}' > ${tmpCutDirPath}/${fileList}
+if [ -d ${tmpCutDirPath}  ]; then
+	cutNum=`ls -l ${tmpCutDirPath}/*.mp3  | wc -l`
+	ls -ld ${tmpCutDirPath}/*.mp3 | awk '{print $5,$NF}' > ${tmpCutDirPath}/${fileList}
+fi
 
 
 ################################################
@@ -332,11 +340,52 @@ fi
 # [3] sync
 ################################################
 
-## do copy job according to syncflag
-case ${syncflag} in
-	"full" )  cpFull ${tmpFullMP3Path} ${syncFullPath} ;;
-	"optalk" )  cpOptalk ${tmpCutDirPath} ${syncOptalkPath} ;;
-esac
+## execute copy job according to syncflag
+
+echo ""
+
+if [ `echo ${syncflag} | grep "full" ` ]; then
+	echo "[full]START"
+	echo "#tmpFullMP3Path:${tmpFullMP3Path}"
+	echo "#syncFullPath:${syncFullPath}"
+	cpFull ${tmpFullMP3Path} ${syncFullPath}
+	echo "[full]END"
+	echo ""
+fi
+
+if [ `echo ${syncflag} | grep "optalk" ` ]; then
+	echo "[optalk]START"
+	echo "#tmpCutDirPath:${tmpCutDirPath}"
+	echo "#syncOptalkPath:${syncOptalkPath}"
+	cpOptalk ${tmpCutDirPath} ${syncOptalkPath}
+	echo "[optalk]END"
+	echo ""
+fi
+
+if [ `echo ${syncflag} | grep "base" ` ]; then
+	echo "[base]START"
+	echo "#tmpCutDirPath:${tmpCutDirPath}"
+	echo "#syncBasePath:${syncBasePath}"
+	echo "#threshold:${threshold}"
+	cpBase ${tmpCutDirPath} ${syncBasePath} ${threshold}
+	echo "[base]END"
+	echo ""
+fi
+
+if [ `echo ${syncflag} | grep "cm" ` ]; then
+	echo "[cm]START"
+	echo "#tmpCutDirPath:${tmpCutDirPath}"
+	echo "#syncCMPath:${syncCMPath}"
+	echo "#threshold:${threshold}"
+	cpCM ${tmpCutDirPath} ${syncCMPath} ${threshold}
+	echo "[cm]END"
+	echo ""
+fi
+
+if [ `echo ${syncflag} | grep "corner" ` ]; then
+	cpCorner ${tmpCutDirPath} ${syncCornerPath} ${cornerName}
+fi
+
 
 ## remove local files
 if [ -s ${tmpFullMP3Path} -a -s ${mntFullMP3Path} ]; then

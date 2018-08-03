@@ -64,3 +64,42 @@ cpOptalk() {
 	Opfile=`cat $1/${fileList} |  head -1 | awk '{print $NF}'`
 	sudo cp -v ${Opfile} $2
 }
+
+# $1:tmpCutDirPath
+# $2:syncOptalkPath
+# $3:threthold
+cpBase() {
+	IFS=$'\n'
+	for EACHFILE in `cat $1/${fileList}`;
+	do
+		fsize=`echo ${EACHFILE} | awk '{print $1}'`
+		fpath=`echo ${EACHFILE} | awk '{print $2}'`
+#		echo "fsize=$fsize,threthold=$3"
+		if [ ! -z "$3" -a  ${fsize} -gt "$3" ]; then
+			sudo cp -v ${fpath} $2
+		fi
+	done;
+}
+
+# $1:tmpCutDirPath
+# $2:syncOptalkPath
+# $3:threthold
+cpCM() {
+	IFS=$'\n'
+	for EACHFILE in `cat $1/${fileList}`;
+	do
+		fsize=`echo ${EACHFILE} | awk '{print $1}'`
+		fpath=`echo ${EACHFILE} | awk '{print $2}'`
+#		echo "fsize=$fsize,threthold=$3"
+		if [ ! -z "$3" -a  ${fsize} -lt "$3" ]; then
+			sudo cp -v ${fpath} $2
+		fi
+	done;
+
+}
+
+# $1:tmpCutDirPath
+# $2:syncOptalkPath
+# $3:cornerName
+#cpCorner() {
+#}
