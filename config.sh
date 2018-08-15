@@ -71,3 +71,5 @@ syncOptalkName=optalk
 syncBaseName=base
 syncCMName=cm
 syncCornerName=corner
+
+syncRemoteName=konaDrive:radiosync

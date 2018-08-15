@@ -6,12 +6,15 @@ pid=$$
 date=`date '+%Y%m%d'`
 
 scriptDir=$(cd $(dirname $0); pwd);
+cd ${scriptDir}
 configFileName=config.sh
 functionFileName=function.sh
+syncFileName=syncDrive.sh
 
 # read *Name parameter and function
 . ./${configFileName}
 . ./${functionFileName}
+. ./${syncFileName}
 
 playerURL=`configGrep playerURL`
 loginURL=`configGrep loginURL`
@@ -68,11 +71,20 @@ syncBaseName=`configGrep syncBaseName`
 syncCMName=`configGrep syncCMName`
 syncCornerName=`configGrep syncCornerName`
 
+syncRemoteName=`configGrep syncRemoteName`
+
 syncFullPath=${syncPath}/${syncFullName}
 syncOptalkPath=${syncPath}/${syncOptalkName}
 syncBasePath=${syncPath}/${syncBaseName}
 syncCMPath=${syncPath}/${syncCMName}
 syncCornerPath=${syncPath}/${syncCornerName}
+
+syncRemoteFullPath=${syncRemoteName}/${syncFullName}
+syncRemoteOptalkPath=${syncRemoteName}/${syncOptalkName}
+syncRemoteBasePath=${syncRemoteName}/${syncBaseName}
+syncRemoteCMPath=${syncRemoteName}/${syncCMName}
+syncRemoteCornerPath=${syncRemoteName}/${syncCornerName}
+
 
 ################################################
 
@@ -357,7 +369,8 @@ if [ `echo ${syncflag} | grep "optalk" ` ]; then
 	echo "[optalk]START"
 	echo "#tmpCutDirPath:${tmpCutDirPath}"
 	echo "#syncOptalkPath:${syncOptalkPath}"
-	cpOptalk ${tmpCutDirPath} ${syncOptalkPath}
+	echo "#threshold:${threshold}"
+	cpOptalk ${tmpCutDirPath} ${syncOptalkPath} ${threshold}
 	echo "[optalk]END"
 	echo ""
 fi
@@ -386,11 +399,46 @@ if [ `echo ${syncflag} | grep "corner" ` ]; then
 	cpCorner ${tmpCutDirPath} ${syncCornerPath} ${cornerName}
 fi
 
+## sync drive
+
+if [ `echo ${syncflag} | grep "full" ` ]; then
+	echo "[sync(full)]START"
+	syncDriveFull ${syncFullPath} ${syncRemoteFullPath}
+	echo "[sync(full)]END"
+	echo ""
+fi
+
+if [ `echo ${syncflag} | grep "optalk" ` ]; then
+	echo "[sync(optalk)]START"
+	syncDriveOptalk ${syncOptalkPath} ${syncRemoteOptalkPath}
+	echo "[sync(optalk)]END"
+	echo ""
+fi
+
+if [ `echo ${syncflag} | grep "base" ` ]; then
+	echo "[sync(base)]START"
+	syncDriveBase ${syncBasePath} ${syncRemoteBasePath}
+	echo "[sync(base)]END"
+	echo ""
+fi
+
+if [ `echo ${syncflag} | grep "cm" ` ]; then
+	echo "[sync(cm)]START"
+	syncDriveCM ${syncCMPath} ${syncRemoteCMPath}
+	echo "[sync(cm)]END"
+	echo ""
+fi
+
+if [ `echo ${syncflag} | grep "corner" ` ]; then
+	echo "[sync(corner)]START"
+	syncDriveCorner ${syncCornerPath} ${syncRemoteCornerPath}
+	echo "[sync(corner)]END"
+	echo ""
+fi
 
 ## remove local files
 if [ -s ${tmpFullMP3Path} -a -s ${mntFullMP3Path} ]; then
 	rm ${tmpFullMP3Path}
 	rm -r ${tmpCutDirPath}
 fi
-
 

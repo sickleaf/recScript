@@ -70,7 +70,9 @@ cpOptalk() {
 #		echo "fsize=$fsize,threthold=$3"
 		if [ ! -z "$3" -a  ${fsize} -gt "$3" ]; then
 			sudo cp -v ${fpath} $2
-			exit
+			break
+		else
+			continue
 		fi
 	done;
 
